@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <!-- 引入cdn加速的jQuery -->
+  <script src="jquery-3.6.0.min.js"></script>
+  <style>
+    .animated-element {
+        transition: all 1s ease 0s, opacity 1.5s ease 0s; /* 指定了动画持续时间 */
+    }
+  </style>
+</head>
+<body style="overflow-y: auto">
+
+    <div style="height: 900px; width: 100%; border: 1px solid #000;margin-bottom: 20px;"></div>
+    <div
+      class="animated-element"
+      data-move-y="200px"
+      style="height: 400px; width: 600px; background-color: #f55"
+    >
+      元素1
+    </div>
+    <div
+      class="animated-element"
+      data-move-y="200px"
+      style="height: 400px; width: 600px; background-color: rgb(51, 82, 184)"
+    >
+      元素1
+    </div>
+    <div
+      class="animated-element"
+      data-move-y="200px"
+      style="height: 400px; width: 600px; background-color: #f55"
+    >
+      元素1
+    </div>
+    <div
+      class="animated-element"
+      data-move-y="200px"
+      style="height: 400px; width: 600px; background-color: rgb(51, 82, 184)"
+    >
+      元素1
+    </div>
+    <div
+      class="animated-element"
+      data-move-y="200px"
+      style="height: 400px; width: 600px; background-color: #f55"
+    >
+      元素1
+    </div>
+    <div
+      class="animated-element"
+      data-move-y="200px"
+      style="height: 400px; width: 600px; background-color: rgb(51, 82, 184)"
+    >
+      元素1
+    </div>
+  </div>
+
+  <script>
+    $(document).ready(function () {
+      function getTransformY($el) {
+        var matrix = $el.css("transform") || "none";
+          var translateYRegex = /matrix\(.*,\s*(.*)\)/;
+          var match = translateYRegex.exec(matrix);
+          var translateYValue = 0;
+          if (match && match.length > 1) {
+            translateYValue = match[1]; // 获取到的translateY的值，例如"200px"
+          }
+          return translateYValue;
+      }
+
+      function smoothDisplayBasedOnVisibility() {
+        $(".animated-element").each(function () {
+          var $element = $(this);
+          var initialMoveY = parseInt($element.data("move-y"), 10);
+          var currentTransformY = getTransformY($element);
+          var elementTop = $element.offset().top - currentTransformY; // 计算修正后的元素顶部位置
+  
+          // 新增条件：检查元素是否在视窗顶部以上
+          var isAboveViewportTop = elementTop < $(window).scrollTop();
+  
+          // 如果元素在视窗顶部以上，则不执行后续动画逻辑
+          if (isAboveViewportTop) {
+              return; // 跳出当前元素的循环处理
+          }
+  
+          var isHalfVisible =
+              elementTop + ($element.outerHeight() / 2) <= $(window).scrollTop() + $(window).height() &&
+              elementTop + ($element.outerHeight() / 2) >= $(window).scrollTop();
+  
+          if (isHalfVisible) {
+              $element.stop().css({
+                  opacity: "1",
+                  transform: "translateY(0px)"
+              });
+          } else {
+              $element.stop().css({
+                  opacity: "0",
+                  transform: `translateY(${initialMoveY}px)`
+              });
+          }
+      });
+      }
+
+      // 页面加载时立即执行一次
+      smoothDisplayBasedOnVisibility();
+
+      // 监听窗口滚动事件，并使用防抖（throttle）或节流（debounce）来优化性能
+      // 这里简单使用防抖作为示例，但实际应用中可能需要更复杂的逻辑
+      var throttleTimeout;
+      $(window).on("scroll", function() {
+        clearTimeout(throttleTimeout);
+        throttleTimeout = setTimeout(smoothDisplayBasedOnVisibility, 100); // 每100ms执行一次
+      });
+    });
+  </script>
+</body>
+</html>
